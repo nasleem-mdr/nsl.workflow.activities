@@ -76,6 +76,12 @@ import org.zkoss.zul.Html;
 import org.zkoss.zul.North;
 import org.zkoss.zul.South;
 import org.zkoss.zul.Vlayout;
+import org.zkoss.zul.Groupbox grpDetails;
+import org.zkoss.zul.Listbox lstLines;
+import java.lang.reflect.Method;
+import org.zkoss.zk.ui.Component;
+import org.zkoss.zul.Listhead;
+import org.zkoss.zul.Listheader;
 
 /**
  * Workflow activity form
@@ -124,9 +130,9 @@ public class WWFActivity extends ADForm implements EventListener<Event>
 
 	private ListModelTable model = null;
 	private WListbox listbox = new WListbox();
+	private org.zkoss.zul.Groupbox grpDetails;
+	private org.zkoss.zul.Listbox lstLines;
 
-	private final static String HISTORY_DIV_START_TAG = "<div style='overflow-y:scroll;height: 100px; border: 1px solid #7F9DB9;'>";
-	
 	/**
 	 * default constructor
 	 */
@@ -297,9 +303,28 @@ public class WWFActivity extends ADForm implements EventListener<Event>
 		north.setStyle("background-color: transparent");
 		listbox.addEventListener(Events.ON_SELECT, this);
 
+		// =================================================================
+		// PERBAIKAN URUTAN: Inisialisasi Groupbox kustom WAJIB ditaruh di sini 
+		// (Sebelum dipanggil/dimasukkan ke dalam vlayout Center)
+		// =================================================================
+		grpDetails = new org.zkoss.zul.Groupbox();
+		grpDetails.setCaption("Detail Transaksi / Transaction Lines");
+		grpDetails.setOpen(true);
+		grpDetails.setHflex("1");
+		grpDetails.setVisible(false); // Sembunyikan secara default
+
+		lstLines = new org.zkoss.zul.Listbox();
+		lstLines.setHflex("1");
+		lstLines.setSpan(true);
+		lstLines.setSclass("mobile-scrollable-list"); 
+		grpDetails.appendChild(lstLines);
+		// =================================================================
+
 		Center center = new Center();
 		Vlayout vlayout = new Vlayout();
 		vlayout.appendChild(grid);
+		vlayout.appendChild(grpDetails); // SEKARANG AMAN: grpDetails sudah tidak null lagi
+        
 		vlayout.setWidth("100%");
 		vlayout.setHeight("99%");
 		center.appendChild(vlayout);
@@ -313,9 +338,131 @@ public class WWFActivity extends ADForm implements EventListener<Event>
 		layout.appendChild(south);
 		south.setStyle("background-color: transparent");
 
+		// Tambahkan komponen CSS ke form utama
+		org.zkoss.zul.Style customStyle = new org.zkoss.zul.Style();
+		String cssCode = 
+			"@media screen and (max-width: 768px) {"
+			+ "  .wf-split-layout { display: flex !important; flex-direction: column !important; }"
+			+ "  .wf-left-card-panel, .wf-right-detail-panel { width: 100% !important; flex: none !important; height: auto !important; }"
+			+ "  .wf-left-card-panel { margin-bottom: 15px; max-height: 40vh; overflow-y: auto; }"
+			+ "}";
+		customStyle.setContent(cssCode);
+		this.appendChild(customStyle); 
+
+		// KOREKSI: Baris 'this.appendChild(grpDetails);' sudah DIHAPUS dari sini 
+		// karena posisinya sudah digantikan secara benar oleh vlayout di atas.
+		
 		this.appendChild(layout);
 		this.setStyle("height: 100%; width: 100%; position: relative;");
 	}
+
+	private void renderTransactionDetails(MWFActivity activity) {
+        // Reset state tampilan
+        lstLines.getChildren().clear();
+        grpDetails.setVisible(false);
+        
+        if (activity == null || activity.getRecord_ID() <= 0) 
+            return;
+        
+        try {
+            int tableId = activity.getAD_Table_ID();
+            MTable table = MTable.get(Env.getCtx(), tableId);
+            //PO headerPO = table.getPO(activity.getRecord_ID(), activity.get_TrxName());
+			PO headerPO = table.getPO(activity.getRecord_ID(), null); 
+            
+            if (headerPO == null) 
+                return;
+            
+            // Menggunakan Java Reflection mencari method getLines() secara global
+            Method getLinesMethod = null;
+            try {
+                getLinesMethod = headerPO.getClass().getMethod("getLines");
+            } catch (NoSuchMethodException e) {
+                // Jika objek tidak punya method getLines (bukan tabel transaksi bertingkat), sembunyikan grid
+                grpDetails.setVisible(false);
+                return;
+            }
+            
+            Object[] lines = (Object[]) getLinesMethod.invoke(headerPO);
+            
+            if (lines != null && lines.length > 0) {
+                grpDetails.setVisible(true); // Tampilkan box panel detail
+                
+                // Set Header Tabel Minimalis agar rapi di Mobile
+                Listhead listHead = new Listhead();
+                listHead.appendChild(createHeader("Produk / Deskripsi", "2"));
+                listHead.appendChild(createHeader("Qty", "1"));
+                listHead.appendChild(createHeader("Total Harga", "1"));
+                lstLines.appendChild(listHead);
+                
+                // Mengambil nilai field line secara dinamis
+                for (Object line : lines) {
+                    Listitem item = new Listitem();
+                    
+                    // 1. Ambil Nama Produk / Deskripsi Item
+                    String itemDetail = "Item / Line";
+                    try {
+                        Method getProductMethod = line.getClass().getMethod("getM_Product");
+                        Object product = getProductMethod.invoke(line);
+                        if (product != null) {
+                            Method getNameMethod = product.getClass().getMethod("getName");
+                            itemDetail = (String) getNameMethod.invoke(product);
+                        }
+                    } catch (Exception e) {
+                        try {
+                            Method getDescriptionMethod = line.getClass().getMethod("getDescription");
+                            Object desc = getDescriptionMethod.invoke(line);
+                            if (desc != null) itemDetail = desc.toString();
+                        } catch (Exception ex) {}
+                    }
+                    
+                    // 2. Ambil nilai Qty (Mencoba kecocokan method getter Qty yang umum)
+                    String qty = "0";
+                    String[] qtyMethodNames = {"getQtyInvoiced", "getQtyOrdered", "getQtyEntered", "getQtyField", "getQtyDelivered"};
+                    for (String methodName : qtyMethodNames) {
+                        try {
+                            Method getQty = line.getClass().getMethod(methodName);
+                            Object qtyObj = getQty.invoke(line);
+                            if (qtyObj != null) {
+                                qty = qtyObj.toString();
+                                break;
+                            }
+                        } catch (Exception e) {}
+                    }
+                    
+                    // 3. Ambil nilai Total Harga / Line Net Amount
+                    String lineNetAmt = "0";
+                    try {
+                        Method getLineNetAmt = line.getClass().getMethod("getLineNetAmt");
+                        Object amtObj = getLineNetAmt.invoke(line);
+                        if (amtObj != null) lineNetAmt = amtObj.toString();
+                    } catch (Exception e) {
+                        try {
+                            // Alternatif jika tidak ada getLineNetAmt (misal di beberapa dokumen internal)
+                            Method getPriceActual = line.getClass().getMethod("getPriceActual");
+                            Object priceObj = getPriceActual.invoke(line);
+                            if (priceObj != null) lineNetAmt = priceObj.toString();
+                        } catch (Exception ex) {}
+                    }
+                    
+                    // Masukkan komponen teks ke dalam baris ZK Listbox
+                    item.appendChild(new Listcell(itemDetail));
+                    item.appendChild(new Listcell(qty));
+                    item.appendChild(new Listcell(lineNetAmt));
+                    lstLines.appendChild(item);
+                }
+            }
+        } catch (Exception e) {
+            log.log(Level.SEVERE, "Gagal memproses refleksi detail transaksi di form approval", e);
+        }
+    }
+
+    // Helper membuat header dengan rasio lebar persentase fleksibel (hflex)
+    private Listheader createHeader(String label, String ratio) {
+        Listheader header = new Listheader(label);
+        header.setHflex(ratio); 
+        return header;
+    }
 
 	@Override
 	public void onEvent(Event event) throws Exception
@@ -432,7 +579,7 @@ public class WWFActivity extends ADForm implements EventListener<Event>
 		listbox.setItemRenderer(renderer);
 		listbox.setSizedByContent(false);
 		listbox.repaint();
-
+		
 		return m_activities.length;
 	}	//	loadActivities
 
@@ -548,6 +695,7 @@ public class WWFActivity extends ADForm implements EventListener<Event>
 
 		statusBar.setStatusDB((m_index+1) + "/" + m_activities.length);
 		statusBar.setStatusLine(Msg.getMsg(Env.getCtx(), "WFActivities"));
+		renderTransactionDetails(m_activity);
 	}	//	display
 
 

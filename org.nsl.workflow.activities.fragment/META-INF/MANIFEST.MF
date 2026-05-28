@@ -1,8 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: NSL Workflow Activities Fragment
-Bundle-SymbolicName: org.nsl.workflow.activities.fragment
+Bundle-SymbolicName: org.adempiere.ui.zk.custom.wf;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-11
-Fragment-Host: org.adempiere.base;bundle-version="1.0.0"
-Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Fragment-Host: org.adempiere.ui.zk;bundle-version="13.0.0"
