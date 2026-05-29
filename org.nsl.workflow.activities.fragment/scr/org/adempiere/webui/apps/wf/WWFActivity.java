@@ -188,11 +188,11 @@ public class WWFActivity extends ADForm implements EventListener<Event>
 	 * Layout form
 	 */
 	
-private void init()
-{
-    // ================================================================
-    // BAGIAN 1: BUAT KOMPONEN INTERNAL (Grid Info & Detail Transaksi)
-    // ================================================================
+    private void init()
+    {
+       // ================================================================
+       // BAGIAN 1: BUAT KOMPONEN INTERNAL (Grid Info & Detail Transaksi)
+       // ================================================================
     Grid grid = new Grid();
     grid.setStyle("margin:0; padding:0;");
     grid.makeNoStrip();
@@ -379,7 +379,7 @@ private void init()
     // ================================================================
     this.appendChild(mainChatLayout);
     this.setStyle("height: 100%; width: 100%; position: relative;");
-		}
+	}
 
 	private void renderTransactionDetails(MWFActivity activity) {
         // Reset state tampilan
