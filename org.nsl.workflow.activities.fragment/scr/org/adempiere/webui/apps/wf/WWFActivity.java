@@ -187,174 +187,199 @@ public class WWFActivity extends ADForm implements EventListener<Event>
 	/**
 	 * Layout form
 	 */
-	private void init()
-	{
-		Grid grid = new Grid();
-		grid.setStyle("margin:0; padding:0;");
-        grid.makeNoStrip();
+	
+private void init()
+{
+    // ================================================================
+    // BAGIAN 1: BUAT KOMPONEN INTERNAL (Grid Info & Detail Transaksi)
+    // ================================================================
+    Grid grid = new Grid();
+    grid.setStyle("margin:0; padding:0;");
+    grid.makeNoStrip();
 
-		Columns columns = new Columns();
-		grid.appendChild(columns);
-		Column column = new Column();
-		ZKUpdateUtil.setWidth(column, "30%");
-		columns.appendChild(column);
-		column = new Column();
-		ZKUpdateUtil.setWidth(column, "70%");
-		columns.appendChild(column);
+    Columns columns = new Columns();
+    grid.appendChild(columns);
+    Column column = new Column();
+    ZKUpdateUtil.setWidth(column, "30%");
+    columns.appendChild(column);
+    column = new Column();
+    ZKUpdateUtil.setWidth(column, "70%");
+    columns.appendChild(column);
 
-		Rows rows = new Rows();
-		grid.appendChild(rows);
+    Rows rows = new Rows();
+    grid.appendChild(rows);
 
-		Row row = new Row();
-		rows.appendChild(row);
-		Div div = new Div();
-		div.setStyle("text-align: right;");
-		div.appendChild(lNode);
-		row.appendChild(div);
-		row.appendChild(fNode);
-		ZKUpdateUtil.setHflex(fNode, "true");
-		fNode.setReadonly(true);
+    Row row = new Row();
+    rows.appendChild(row);
+    Div div = new Div();
+    div.setStyle("text-align: right;");
+    div.appendChild(lNode);
+    row.appendChild(div);
+    row.appendChild(fNode);
+    ZKUpdateUtil.setHflex(fNode, "true");
+    fNode.setReadonly(true);
 
-		row = new Row();
-		rows.appendChild(row);
-		row.setValign("top");
-		div = new Div();
-		div.setStyle("text-align: right;");
-		div.appendChild(lDesctiption);
-		row.appendChild(div);
-		row.appendChild(fDescription);
-		fDescription.setMultiline(true);
-		ZKUpdateUtil.setHflex(fDescription, "true");
-		fDescription.setReadonly(true);
+    row = new Row();
+    rows.appendChild(row);
+    row.setValign("top");
+    div = new Div();
+    div.setStyle("text-align: right;");
+    div.appendChild(lDesctiption);
+    row.appendChild(div);
+    row.appendChild(fDescription);
+    fDescription.setMultiline(true);
+    ZKUpdateUtil.setHflex(fDescription, "true");
+    fDescription.setReadonly(true);
 
-		row = new Row();
-		rows.appendChild(row);
-		div = new Div();
-		div.setStyle("text-align: right;");
-		div.appendChild(lHelp);
-		row.appendChild(div);
-		row.appendChild(fHelp);
-		fHelp.setMultiline(true);
-		fHelp.setRows(3);
-		ZKUpdateUtil.setHflex(fHelp, "true");
-		fHelp.setReadonly(true);
+    row = new Row();
+    rows.appendChild(row);
+    div = new Div();
+    div.setStyle("text-align: right;");
+    div.appendChild(lHelp);
+    row.appendChild(div);
+    row.appendChild(fHelp);
+    fHelp.setMultiline(true);
+    fHelp.setRows(3);
+    ZKUpdateUtil.setHflex(fHelp, "true");
+    fHelp.setReadonly(true);
 
-		row = new Row();
-		rows.appendChild(row);
-		div = new Div();
-		div.setStyle("text-align: right;");
-		div.appendChild(lHistory);
-		row.appendChild(div);
-		row.appendChild(fHistory);
-		ZKUpdateUtil.setHflex(fHistory, "true");
+    row = new Row();
+    rows.appendChild(row);
+    div = new Div();
+    div.setStyle("text-align: right;");
+    div.appendChild(lHistory);
+    row.appendChild(div);
+    row.appendChild(fHistory);
+    ZKUpdateUtil.setHflex(fHistory, "true");
 
-		row = new Row();
-		rows.appendChild(row);
-		div = new Div();
-		div.setStyle("text-align: right;");
-		div.appendChild(lAnswer);
-		row.appendChild(div);
-		FlexHlayout hbox = new FlexHlayout();
-		hbox.appendChild(fAnswerText);
-		ZKUpdateUtil.setHflex(fAnswerText, "true");
-		hbox.appendChild(fAnswerList);
-		hbox.appendChild(fAnswerButton);
-		hbox.appendChild(bZoom);
-		row.appendChild(hbox);
-		fAnswerButton.addEventListener(Events.ON_CLICK, this);
-		bZoom.addEventListener(Events.ON_CLICK, this);
+    // Row: Answer
+    row = new Row();
+    rows.appendChild(row);
+    div = new Div();
+    div.setStyle("text-align: right;");
+    div.appendChild(lAnswer);
+    row.appendChild(div);
+    org.zkoss.zul.Hlayout hbox = new org.zkoss.zul.Hlayout(); // <-- CHANGED
+    hbox.appendChild(fAnswerText);
+    ZKUpdateUtil.setHflex(fAnswerText, "true");
+    hbox.appendChild(fAnswerList);
+    hbox.appendChild(fAnswerButton);
+    hbox.appendChild(bZoom);
+    row.appendChild(hbox);
+    fAnswerButton.addEventListener(Events.ON_CLICK, this);
+    bZoom.addEventListener(Events.ON_CLICK, this);
 
-		row = new Row();
-		rows.appendChild(row);
-		div = new Div();
-		div.setStyle("text-align: right;");
-		div.appendChild(lTextMsg);
-		row.appendChild(div);
-		row.appendChild(fTextMsg);
-		fTextMsg.setMultiline(true);
-		ZKUpdateUtil.setWidth(fTextMsg, "100%");
+    // Row: Text Message
+    row = new Row();
+    rows.appendChild(row);
+    div = new Div();
+    div.setStyle("text-align: right;");
+    div.appendChild(lTextMsg);
+    row.appendChild(div);
+    row.appendChild(fTextMsg);
+    fTextMsg.setMultiline(true);
+    ZKUpdateUtil.setWidth(fTextMsg, "100%");
 
-		row = new Row();
-		rows.appendChild(row);
-		div = new Div();
-		div.setStyle("text-align: right;");
-		div.appendChild(lForward);
-		row.appendChild(div);
-		hbox = new FlexHlayout();
-		hbox.appendChild(fForward.getComponent());
-		hbox.appendChild(bOK);
-		hbox.appendChild(bRefresh);
-		row.appendChild(hbox);
-		bOK.addEventListener(Events.ON_CLICK, this);
-		bRefresh.addEventListener(Events.ON_CLICK, this);
+    // Row: Forward
+    row = new Row();
+    rows.appendChild(row);
+    div = new Div();
+    div.setStyle("text-align: right;");
+    div.appendChild(lForward);
+    row.appendChild(div);
+    hbox = new org.zkoss.zul.Hlayout(); // <-- CHANGED
+    hbox.appendChild(fForward.getComponent());
+    hbox.appendChild(bOK);
+    hbox.appendChild(bRefresh);
+    row.appendChild(hbox);
+    bOK.addEventListener(Events.ON_CLICK, this);
+    bRefresh.addEventListener(Events.ON_CLICK, this);
 
-		Borderlayout layout = new Borderlayout();
-		ZKUpdateUtil.setWidth(layout, "100%");
-		ZKUpdateUtil.setHeight(layout, "100%");
-		layout.setStyle("background-color: transparent; position: relative;");
+    // ================================================================
+    // BAGIAN 2: INISIALISASI GROUPBOX DETAIL TRANSAKSI (grpTxDetails)
+    // WAJIB dibuat SEBELUM dimasukkan ke dalam layout manapun
+    // ================================================================
+    grpTxDetails = new org.zkoss.zul.Groupbox();
+    grpTxDetails.setCaption("Detail Transaksi / Transaction Lines");
+    grpTxDetails.setOpen(true);
+    grpTxDetails.setHflex("1");
+    grpTxDetails.setVisible(false); // Sembunyikan secara default
 
-		North north = new North();
-		north.appendChild(listbox);
-		north.setSplittable(true);
-		ZKUpdateUtil.setVflex(listbox, "1");
-		ZKUpdateUtil.setHflex(listbox, "1");
-		ZKUpdateUtil.setHeight(north, "49%");
-		layout.appendChild(north);
-		north.setStyle("background-color: transparent");
-		listbox.addEventListener(Events.ON_SELECT, this);
+    lstTxLines = new org.zkoss.zul.Listbox();
+    lstTxLines.setHflex("1");
+    lstTxLines.setSpan(true);
+    lstTxLines.setSclass("mobile-scrollable-list");
+    grpTxDetails.appendChild(lstTxLines);
 
-		// =================================================================
-		// PERBAIKAN URUTAN: Inisialisasi Groupbox kustom WAJIB ditaruh di sini 
-		// (Sebelum dipanggil/dimasukkan ke dalam vlayout Center)
-		// =================================================================
-		grpDetails = new org.zkoss.zul.Groupbox();
-		grpDetails.setCaption("Detail Transaksi / Transaction Lines");
-		grpDetails.setOpen(true);
-		grpDetails.setHflex("1");
-		grpDetails.setVisible(false); // Sembunyikan secara default
+    // ================================================================
+    // BAGIAN 3: BUAT LAYOUT UTAMA COLLAPSIBLE
+    // ================================================================
+    Borderlayout mainChatLayout = new Borderlayout();
+    ZKUpdateUtil.setWidth(mainChatLayout, "100%");
+    ZKUpdateUtil.setHeight(mainChatLayout, "100%");
+    mainChatLayout.setStyle("background-color: #f7f9fa; position: relative;");
 
-		lstLines = new org.zkoss.zul.Listbox();
-		lstLines.setHflex("1");
-		lstLines.setSpan(true);
-		lstLines.setSclass("mobile-scrollable-list"); 
-		grpDetails.appendChild(lstLines);
-		// =================================================================
+    // --- PANEL KIRI (West): Daftar Antrean Approval yang Collapsible ---
+    West westPanel = new West();
+    westPanel.setSize("320px");
+    westPanel.setSplittable(true);
+    westPanel.setCollapsible(true);
+    westPanel.setTitle("Antrean Approval / Approvals");
+    westPanel.setStyle("background-color: transparent;");
+    ZKUpdateUtil.setVflex(listbox, "1");
+    ZKUpdateUtil.setHflex(listbox, "1");
+    westPanel.appendChild(listbox);
+    mainChatLayout.appendChild(westPanel);
+    listbox.addEventListener(Events.ON_SELECT, this);
 
-		Center center = new Center();
-		Vlayout vlayout = new Vlayout();
-		vlayout.appendChild(grid);
-		vlayout.appendChild(grpDetails); // SEKARANG AMAN: grpDetails sudah tidak null lagi
-        
-		vlayout.setWidth("100%");
-		vlayout.setHeight("99%");
-		center.appendChild(vlayout);
-		layout.appendChild(center);
-		center.setStyle("background-color: transparent; overflow:auto");
-		ZKUpdateUtil.setVflex(grid, "1");
-		ZKUpdateUtil.setHflex(grid, "1");
+    // --- PANEL KANAN (Center): Area Detail & Aksi ---
+    Center centerPanel = new Center();
+    centerPanel.setStyle("background-color: transparent; overflow: auto;");
 
-		South south = new South();
-		south.appendChild(statusBar);
-		layout.appendChild(south);
-		south.setStyle("background-color: transparent");
+    Vlayout chatAreaLayout = new Vlayout();
+    chatAreaLayout.setHflex("1");
+    chatAreaLayout.setSpacing("15px");
+    chatAreaLayout.setStyle("padding: 15px;");
 
-		// Tambahkan komponen CSS ke form utama
-		org.zkoss.zul.Style customStyle = new org.zkoss.zul.Style();
-		String cssCode = 
-			"@media screen and (max-width: 768px) {"
-			+ "  .wf-split-layout { display: flex !important; flex-direction: column !important; }"
-			+ "  .wf-left-card-panel, .wf-right-detail-panel { width: 100% !important; flex: none !important; height: auto !important; }"
-			+ "  .wf-left-card-panel { margin-bottom: 15px; max-height: 40vh; overflow-y: auto; }"
-			+ "}";
-		customStyle.setContent(cssCode);
-		this.appendChild(customStyle); 
+    // a. Grid info bawaan iDempiere
+    ZKUpdateUtil.setHflex(grid, "1");
+    chatAreaLayout.appendChild(grid);
 
-		// KOREKSI: Baris 'this.appendChild(grpDetails);' sudah DIHAPUS dari sini 
-		// karena posisinya sudah digantikan secara benar oleh vlayout di atas.
-		
-		this.appendChild(layout);
-		this.setStyle("height: 100%; width: 100%; position: relative;");
-	}
+    // b. Groupbox Detail Transaksi
+    chatAreaLayout.appendChild(grpTxDetails);
+
+    // c. Panel Tombol Aksi Modern (Approve & Reject)
+    org.zkoss.zul.Hlayout actionButtonArea = createModernActionButtons();
+    chatAreaLayout.appendChild(actionButtonArea);
+
+    centerPanel.appendChild(chatAreaLayout);
+    mainChatLayout.appendChild(centerPanel);
+
+    // --- PANEL BAWAH (South): Status Bar ---
+    South south = new South();
+    south.appendChild(statusBar);
+    south.setStyle("background-color: transparent;");
+    mainChatLayout.appendChild(south);
+
+    // ================================================================
+    // BAGIAN 4: CSS RESPONSIF MOBILE
+    // ================================================================
+    org.zkoss.zul.Style customStyle = new org.zkoss.zul.Style();
+    String cssCode =
+        "@media screen and (max-width: 768px) {"
+        + "  .wf-split-layout { display: flex !important; flex-direction: column !important; }"
+        + "  .wf-left-card-panel, .wf-right-detail-panel { width: 100% !important; flex: none !important; height: auto !important; }"
+        + "  .wf-left-card-panel { margin-bottom: 15px; max-height: 40vh; overflow-y: auto; }"
+        + "}";
+    customStyle.setContent(cssCode);
+    this.appendChild(customStyle);
+
+    // ================================================================
+    // BAGIAN 5: TEMPEL LAYOUT UTAMA KE FORM
+    // ================================================================
+    this.appendChild(mainChatLayout);
+    this.setStyle("height: 100%; width: 100%; position: relative;");
+		}
 
 	private void renderTransactionDetails(MWFActivity activity) {
         // Reset state tampilan
